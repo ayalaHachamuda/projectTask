@@ -8,12 +8,13 @@ exports.AddUser = async (req, res) => {
   const user = await usersList.create(req.body);
   console.log(user,"user");
   // usersList.push(req.body)
-  res.status(200).json({message:usersList})
+  return res.status(200).json({message:usersList})
 }
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await usersList.find()
-    res.status(200).json({message:usersList})
+    // res.status(200).json({message:usersList})
+    res.json(users);
   }
   catch (error) {
     console.error('Failed to get users:', error);

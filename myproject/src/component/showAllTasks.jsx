@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { connect, useDispatch } from 'react-redux';
-import { addTaskList, addTaskType,deleteTaskType,getAllTasks } from "../redux/actions";
+import { addTaskList, addTaskType, deleteTaskType, getTaskList, getTaskType } from "../redux/actions";
 import { useParams, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import Task from './task';
 import axios from "axios";
@@ -21,7 +21,7 @@ import { colors } from "@mui/material";
 //   ...theme.typography.body2,
 //   textAlign: 'center',
 //   // color:red
-  
+
 // }));
 
 const DemoPaper = styled(Paper)(({ theme }) => ({
@@ -33,7 +33,7 @@ const DemoPaper = styled(Paper)(({ theme }) => ({
   color: grey[900],
   backgroundColor: 'transparent',
   boxShadow: theme.shadows[1],
-  
+
 }));
 
 function mapStateToProps(state) {
@@ -45,167 +45,217 @@ function mapStateToProps(state) {
   };
 }
 export default connect(mapStateToProps)(function ShowAllTasks(props) {
-  const getAllTasks=async()=>{
-    try{
-      const response=await axios.get('http://localhost:5000/task')
-      const responseType=await axios.get('http://localhost:5000/task/TaskType')
+
+  const getAllTasks = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/task')
+      const responseType = await axios.get('http://localhost:5000/TaskType')
 
       console.log(response.data);
-      if(response.status==200&&responseType.status==200)
-
-      {
+      if (response.status == 200 && responseType.status == 200) {
         console.log("getTasksList");
         dispatch(getTaskType(responseType.data))
 
-        dispatch(getTasksList(response.data))
+        dispatch(getTaskList(response.data))
       }
     }
-    catch(error){
+    catch (error) {
       console.log("pppp");
       console.error(error);
 
     }
   }
-  const addTaskList=async()=>{
-    try{
-      const newTask={ taskTypeId: countTaskType + 1, taskTypeName: taskTypeNameRef.current.value}
+  const addTaskL = async () => {
+    const t = taskType.find(x => x.taskTypeId == taskListTypeIdRef.current.value)
+    const i = taskList.find(x => x.taskId == taskIdRef.current.value)
+    if (t) {
+      if (!i) {
+        try {
+
+          const newTask = {
+            taskId: taskIdRef.current.value, taskTypeId: taskListTypeIdRef.current.value, taskName: taskNameRef.current.value
+            , contactTaskID: contactTaskIDRef.current.value
+          }
+          console.log(newTask, "newTask");
+
+          const response = await axios.post('http://localhost:5000/task', newTask)
+          console.log(response.data);
+          if (response.status == 200) {
+            console.log("addTaskList");
+
+            dispatch(addTaskList(newTask))
+
+          }
+        }
+        catch (error) {
+
+          console.error(error);
+
+        }
+      }
+      else{
+        alert("כבר קיימת משימה עם קוד כזה")
+      }
+
+      
 
 
-      const response=await axios.post('http://localhost:5000/task',newTask)
-      console.log(response.data);
-      if(response.status==200)
-      {
-        console.log("addTaskList");
+    }
+    else {
+      alert(" אין כזה סוג משימה")
+    }
+}
+    const { taskList, taskType, countTaskList, countTaskType } = props;
+    const newNavigate = useNavigate()
+    const location = useLocation()
+    const userId = location.state && location.state.userId
+    console.log("userId", userId)
+    console.log("location", location)
+    let taskTypeIdRef = useRef('');
+    let taskIdRef = useRef('');
+    let taskNameRef = useRef('');
+    let contactTaskIDRef = useRef('');
+    let taskListTypeIdRef = useRef('');
+    let contactTaskNameRef = useRef('');
+    const [inputTaskId, setInputTaskId] = useState('');
+    const [senderTask, setSenderTask] = useState('');
+    const [showAllTasks, setShowAllTasks] = useState(true);
+    const [showTask, setshowTask] = useState(false);
+    let taskTypeNameRef = useRef('');
+    // useEffect(function () {
+    //   console.log("ShowAllTasks", taskList)
+    // }, [taskList, taskType, countTaskList, countTaskType])
+    useEffect(() => { getAllTasks() }, [])
+    const dispatch = useDispatch();
 
-        dispatch(addTaskList(newTask))
+    const addTask = () => {
+      addTaskL()
+      // dispatch(addTaskList({
+      //   taskId: countTaskList + 1, taskTypeId: taskTypeIdRef.current.value, taskName: taskNameRef.current.value,
+      //   contactTaskID: contactTaskIDRef.current.value, contactTaskName: contactTaskNameRef.current.value
+      // }));
+    }
+    const senddingInputTaskId = (value) => {
+      console.log(value);
+      let member = taskList.find(x => x.taskId == value)
+      console.log(member, "taskList[index]//////")
+      setSenderTask(member)
+      console.log(senderTask, "SenderTask//////")
+      setShowAllTasks(false);
+      setshowTask(true);
+    };
+    const addTaskT = async () => {
+
+      try {
+        const newTask = { taskTypeId: taskTypeIdRef.current.value, taskTypeName: taskTypeNameRef.current.value }
+        console.log(newTask, "newTask");
+
+        const response = await axios.post('http://localhost:5000/taskType', newTask)
+        console.log(response.data);
+        if (response.status == 200) {
+          console.log("addTaskType");
+
+          dispatch(addTaskType(newTask))
+
+        }
+      }
+      catch (error) {
+
+        console.error(error);
 
       }
+
+
+
+      //dispatch(addTaskType({ taskTypeId: taskTypeIdRef.current.value, taskTypeName: taskTypeNameRef.current.value }));
     }
-    catch(error){
-     
-      console.error(error);
+    const addTaskTypeHere = () => {
 
+      addTaskT()
     }
-  }
+    const updateAndDel = ((id) => {
+      console.log(`id`, id)
+      newNavigate("/task", { state: { id } })
+    })
 
-  const { taskList, taskType, countTaskList, countTaskType } = props;
-  const newNavigate = useNavigate()
-  const location = useLocation()
-  const userId = location.state && location.state.userId
-  console.log("userId", userId)
-  console.log("location", location)
-  let taskTypeIdRef = useRef('');
-  let taskNameRef = useRef('');
-  let contactTaskIDRef = useRef('');
-  let contactTaskNameRef = useRef('');
-  const [inputTaskId, setInputTaskId] = useState('');
-  const [senderTask, setSenderTask] = useState('');
-  const [showAllTasks, setShowAllTasks] = useState(true);
-  const [showTask, setshowTask] = useState(false);
-  let taskTypeNameRef = useRef('');
-  // useEffect(function () {
-  //   console.log("ShowAllTasks", taskList)
-  // }, [taskList, taskType, countTaskList, countTaskType])
-  useEffect(()=>{getAllTasks()},[])
-  const dispatch = useDispatch();
+    const DeleteTaskType = (taskTypeId) => {
 
-  const addTask = () => {
-    addTaskList()
-    // dispatch(addTaskList({
-    //   taskId: countTaskList + 1, taskTypeId: taskTypeIdRef.current.value, taskName: taskNameRef.current.value,
-    //   contactTaskID: contactTaskIDRef.current.value, contactTaskName: contactTaskNameRef.current.value
-    // }));
-  }
-  const senddingInputTaskId = (value) => {
-    console.log(value);
-    let member = taskList.find(x => x.taskId == value)
-    console.log(member, "taskList[index]//////")
-    setSenderTask(member)
-    console.log(senderTask, "SenderTask//////")
-    setShowAllTasks(false);
-    setshowTask(true);
-  };
-  const addTaskTypeHere = () => {
-    dispatch(addTaskType({ taskTypeId: countTaskType + 1, taskTypeName: taskTypeNameRef.current.value }));
-
-  }
-  const updateAndDel = ((id) => {
-    console.log(`id`, id)
-    newNavigate("/task", { state: { id } })
-  })
-
-  const DeleteTaskType = (taskTypeId) => {
-
-    dispatch(deleteTaskType({ taskTypeId: taskTypeId }))
-    newNavigate("/showAllTasks", { state: { userId } })
+      dispatch(deleteTaskType({ taskTypeId: taskTypeId }))
+      newNavigate("/showAllTasks", { state: { userId } })
 
 
-  };
+    };
 
-  return (
-    <div>
-
-      <h1>המשימות שלי:</h1>
-      <Stack direction="row" spacing={countTaskList} position="sticky"class="Stack">
-      {taskList.map((task) => {
-        if (task.contactTaskID == userId) {
-          return (
-            // class="DemoPaper"
-            <DemoPaper variant="elevation" >
-            <div key={task.taskId}>
-              <h3>{task.taskName}</h3>
-              <button onClick={() => updateAndDel(task.taskId)}>מחיקה/עדכון</button>
-              {/* <button onClick={updateAndDel(task.taskId)}>מחיקה/עדכון</button> */}
-              <p>קוד משימה: {task.taskId}</p>
-              <p>קוד סוג משימה: {task.taskTypeId}</p>
-              <p>תעודת זהות משתמש: {task.contactTaskID}</p>
-              <p>שם משתמש: {task.contactTaskName}</p>
-            </div>
-            </DemoPaper>
-          );
-        }
-        
-        // If the condition is not met, return null or an empty fragment
-        return null
-      })}</Stack>
-      <h1>סוגי משימות:</h1>
-      {taskType.map((type) => (
-        <div key={type.taskTypeId}>
-
-          <h3>שם סוג משימה: {type.taskTypeName}</h3>
-          <p>קוד סוג משימה: {type.taskTypeId}</p>
-          {/* <button onClick={() => DeleteTaskType(type.taskTypeId)}>מחיקה</button> */}
-        </div>
-      ))}
-      <h1>אם ברצונך להוסיף משימה הוסף כאן:</h1>
-      <br></br>
-      <label>קוד סוג משימה</label>
-      <input ref={taskTypeIdRef}></input>
-      <br></br>
-      <label>שם משימה</label>
-      <input ref={taskNameRef}></input>
-      <br></br>
-      <label>תעודת זהות משתמש לביצוע המשימה</label>
-      <input ref={contactTaskIDRef}></input>
-      <br></br>
-      <label>שם משתמש לביצוע המשימה</label>
-      <input ref={contactTaskNameRef}></input>
-      <br></br>
-      <button onClick={addTask}>הוספת משימה</button>
-      <h1>אם ברצונך להוסיף סוג משימה הוסף כאן:</h1>
-      <br></br>
-      <label>שם סוג משימה:</label>
-      <input ref={taskTypeNameRef}></input>
-      <br></br>
-      <button onClick={addTaskTypeHere}>הוספת סוג משימה</button>
-      
+    return (
       <div>
 
-      </div>
-    </div>
-  );
+        <h1>המשימות שלי:</h1>
+        <Stack direction="row" spacing={countTaskList} position="sticky" class="Stack">
+          {taskList.map((task) => {
+            if (task.contactTaskID == userId) {
+              return (
 
-})
+                <DemoPaper variant="elevation" >
+                  <div key={task.taskId}>
+                    <h3>{task.taskName}</h3>
+                    <button onClick={() => updateAndDel(task.taskId)}>מחיקה/עדכון</button>
+                    {/* <button onClick={updateAndDel(task.taskId)}>מחיקה/עדכון</button> */}
+                    <p>קוד משימה: {task.taskId}</p>
+                    <p>קוד סוג משימה: {task.taskTypeId}</p>
+                    <p>תעודת זהות משתמש: {task.contactTaskID}</p>
+                    {/* <p>שם משתמש: {task.contactTaskName}</p> */}
+                  </div>
+                </DemoPaper>
+              );
+            }
+
+            // If the condition is not met, return null or an empty fragment
+            return null
+          })}</Stack>
+        <h1>סוגי משימות:</h1>
+        {taskType.map((type) => (
+          <div key={type.taskTypeId}>
+
+            <h3>שם סוג משימה: {type.taskTypeName}</h3>
+            <p>קוד סוג משימה: {type.taskTypeId}</p>
+            {/* <button onClick={() => DeleteTaskType(type.taskTypeId)}>מחיקה</button> */}
+          </div>
+        ))}
+        <h1>אם ברצונך להוסיף משימה הוסף כאן:</h1>
+        <br></br>
+        <label>קוד משימה</label>
+        <input ref={taskIdRef}></input>
+        <br></br>
+        <label>קוד סוג משימה</label>
+        <input ref={taskListTypeIdRef}></input>
+        <br></br>
+        <label>שם משימה</label>
+        <input ref={taskNameRef}></input>
+        <br></br>
+        <label>תעודת זהות משתמש לביצוע המשימה</label>
+        <input ref={contactTaskIDRef}></input>
+        <br></br>
+        {/* <label>שם משתמש לביצוע המשימה</label>
+      <input ref={contactTaskNameRef}></input>
+      <br></br> */}
+        <button onClick={addTask}>הוספת משימה</button>
+        <h1>אם ברצונך להוסיף סוג משימה הוסף כאן:</h1>
+        <br></br>
+        <label>קוד סוג משימה:</label>
+        <input ref={taskTypeIdRef}></input>
+        <br></br>
+        <label>שם סוג משימה:</label>
+        <input ref={taskTypeNameRef}></input>
+        <br></br>
+        <button onClick={addTaskTypeHere}>הוספת סוג משימה</button>
+
+        <div>
+
+        </div>
+      </div>
+    );
+
+  })
 
 
 

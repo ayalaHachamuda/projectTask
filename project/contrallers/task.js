@@ -17,21 +17,21 @@
 // ]
 //סיימתי עמוד זה ללא סוג משימה
 const taskList = require("../models/task")
-const taskType = require("../models/task")
+const taskType = require("../models/taskType")
 exports.addTaskType = async (req, res) => {
-    const { taskTypeId, taskTypeName } = req.body;
+    //const { taskTypeId, taskTypeName } = req.body;
     const task = await taskType.create(req.body);
    
-    res.json(taskType);
+    res.json(task);
 
    // console.log(req.body);
     
 }
 exports.AddTask = async (req, res) => {
-  const { taskId, taskTypeId, taskName } = req.body;
+  //const { taskId, taskTypeId, taskName } = req.body;
   const task = await taskList.create(req.body);
  
-  res.json(taskList);
+  res.json(task);
 
  // console.log(req.body);
   
@@ -39,7 +39,7 @@ exports.AddTask = async (req, res) => {
 exports.getAllTasks = async(req, res) => {
     try {
         const tasks = await taskList.find()
-        res.json(taskList)
+        res.json(tasks)
       }
       catch (error) {
         console.error('Failed to get tasks:', error);
@@ -52,7 +52,7 @@ exports.getAllTasks = async(req, res) => {
 exports.getTaskType = async(req, res) => {
   try {
       const tasks = await taskType.find()
-      res.json(taskType)
+      res.json(tasks)
     }
     catch (error) {
       console.error('Failed to get taskType:', error);
@@ -63,31 +63,25 @@ exports.getTaskType = async(req, res) => {
  // return res.status(200).json({ taskList: taskList })
 }
 exports.deleteTaskById =async (req, res) => {
-    const taskId = req.params.taskId
-    onsole.log(taskId);
+  const {taskId} = req.params;
+  console.log(taskId,"taskId")
     try {
-      const deletedTask = await taskList.findOneAndDelete({ taskId: taskId });
+      const deletedTask = await taskList.findOneAndDelete({  taskId });
       if (!deletedTask) {
-        return res.status(404).json({ message: 'task not found' });
+        res.status(404).json({ message: 'task not found' });
       }
-      res.json({ message: 'task deleted successfully' });
+      else{
+        res.status(200).json({ message: 'task deleted successfully' });
+    }
     } catch (error) {
       console.error('Failed to delete task:', error);
       res.status(500).json({ message: 'Failed to delete task' });
     }
 
-
-
-
-    // const index = taskList.findIndex(x => x.taskId === taskId)
-
-    // taskList.splice(index, 1)
-
-    // res.send(taskList)
 }
 exports.deleteTaskType =async (req, res) => {
   const taskTypeId = req.params.taskTypeId
-  onsole.log(taskTypeId);
+console.log("in deleteTaskType");
   try {
     const deletedTask = await taskType.findOneAndDelete({ taskTypeId: taskTypeId });
     if (!deletedTask) {
@@ -99,48 +93,56 @@ exports.deleteTaskType =async (req, res) => {
     res.status(500).json({ message: 'Failed to delete taskTypeId' });
   }
 
-
-
-
-  // const index = taskList.findIndex(x => x.taskId === taskId)
-
-  // taskList.splice(index, 1)
-
-  // res.send(taskList)
 }
 exports.updateTaskByTaskId =async (req, res) => {
-    const { taskId } = req.params.taskId
-    console.log("taskId",taskId)
-    const { taskTypeId, taskName } = req.body
-    //const index = usersList.findIndex(x=>x.idNumber === idNumber)
-    try {
-      const updatedTask = await taskList.findOneAndUpdate(
-        { taskId: taskId }, // עדכון לפי שדה userId
-        { taskTypeId, taskName },
-        { new: true }
-      );
+  const taskId = req.params.taskId; // קח את מזהה המשימה מפרמטר ה-URL
+  const { taskName, taskTypeId,contactTaskID } = req.body;
+  try {
+    const updatedTask = await taskList.findOneAndUpdate(
+      { taskId: taskId }, // Find the task by task ID
+      { $set: { taskName, taskTypeId, contactTaskID } }, // Update the name and task type ID
+      { new: true } // Return the updated task
+    );
   
-      if (!updatedTask) {
-        return res.status(404).json({ message: 'task not found' });
-      }
-  
-      res.json(updatedTask);
-    } catch (error) {
-      console.error('Failed to update task:', error);
-      res.status(500).json({ message: 'Failed to update task' });
+    if (!updatedTask) {
+      res.status(404).json({ message: 'Task not found' });
+    } else {
+      res.status(200).json({ message: 'Task updated successfully', updatedTask });
     }
+  } catch (error) {
+    console.error('Failed to update task:', error);
+    res.status(500).json({ message: 'Failed to update task' });
+  }
+  // try {
+  //   const updatedTask = await taskList.findOneAndUpdate(
+  //     { taskId: taskId }, // מצא את המשימה לפי מזהה המשימה
+  //     { taskName: taskName, taskTypeId: taskTypeId,contactTaskID:contactTaskID }, // עדכן את השם ואת מזהה סוג המשימה
+  //     { new: true } // החזר את המשימה המעודכנת
+  //   );
+  
+  //     if (!updatedTask) {
+  //        res.status(404).json({ message: 'task not found' });
+  //     }
+  //     else{
+  //       res.status(200).json({message:'task description update successfully'});
+  //   }
+  //     //res.json(updatedTask);
+  //   } catch (error) {
+  //     console.error('Failed to update task:', error);
+  //     res.status(500).json({ message: 'Failed to update task' });
+  //   }
 
 
 }
 exports.updateTaskType =async (req, res) => {
-  const { taskTypeId } = req.params.taskTypeId
-  console.log("taskId",taskId)
-  const {  taskName } = req.body
-  //const index = usersList.findIndex(x=>x.idNumber === idNumber)
+  const taskTypeId = req.params.taskTypeId
+  
+  const {  taskTypeName } = req.body
+  console.log("in updateTaskType")
   try {
     const updatedTask = await taskType.findOneAndUpdate(
-      { taskTypeId: taskTypeId }, // עדכון לפי שדה userId
-      { taskName },
+      {taskTypeId:taskTypeId}, 
+       {taskTypeName:taskTypeName},
       { new: true }
     );
 

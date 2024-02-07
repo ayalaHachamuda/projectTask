@@ -27,7 +27,7 @@ export default connect(mapStateToProps)(function Task(props) {
       console.error(error);
     }
   }
-  const updateTaskList=async()=>{
+  const updateTaskL=async()=>{
     try {
      
       const updatedTask = {
@@ -35,11 +35,12 @@ export default connect(mapStateToProps)(function Task(props) {
         taskTypeId: editedTaskTypeId,
         taskName: editedTaskName,
         contactTaskID: editedContactTaskID,
-        contactTaskName: editedContactTaskName
+        // contactTaskName: editedContactTaskName
 
       };
-       console.log(updatedTask);
-      const response=await axios.put(`http://localhost:5000/task/${updatedTask}`)
+       console.log(updatedTask,"updatedTask");
+      // const response=await axios.put(`http://localhost:5000/task/${id}`)
+      const response = await axios.put(`http://localhost:5000/task/${id}`, updatedTask);
   console.log(response.data);
   if(response.status==200)
   {
@@ -90,7 +91,7 @@ export default connect(mapStateToProps)(function Task(props) {
     // console.log("updatedTask",updatedTask)
     // console.log(updatedTask.contactTaskID,"סתכלי!!!!!1111")
     // dispatch(updateTaskList(updatedTask))
-    updateTaskList();
+    updateTaskL();
     //newNavigate("/showAllTasks", { state: { userId: task.userId } })
     // console.log(updatedTask.contactTaskID,"סתכלי!!!!!2222")
     newNavigate('/showAllTasks', { state: { userId: editedContactTaskID  } })

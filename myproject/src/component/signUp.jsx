@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
-import { addUser, deleteUser } from "../redux/actions";
+import { addUser, deleteUser ,getUsersList} from "../redux/actions";
 //import Login from './component/login';
 import { useParams, Navigate, useNavigate } from 'react-router-dom'
 import axios from "axios";
@@ -49,7 +49,7 @@ export default connect(mapStateToProps)(function Login(props) {
   }
   const addUser=async()=>{
     try{
-      const newUser={ FirstName: FirstNameRef.current.value, LastName: LastNameRef.current.value, IDNumberRef: IDNumberRef.current.value }
+      const newUser={ firstName: FirstNameRef.current.value, lastName: LastNameRef.current.value, idNumber: IDNumberRef.current.value }
 
 
       const response=await axios.post('http://localhost:5000/user/',newUser)
@@ -88,7 +88,8 @@ export default connect(mapStateToProps)(function Login(props) {
       addUser();
       alert(`שלום ${FirstNameRef.current.value} ${LastNameRef.current.value}`);
       console.log("usersList22222222222", usersList)
-      navigate('/showAllTasks', { state: {} })
+      const userId=IDNumberRef.current.value;
+      navigate('/showAllTasks', { state: {userId} })
     }
     else
     alert("יש לך כבר חשבון")
