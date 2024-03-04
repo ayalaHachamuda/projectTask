@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
-import { addUser,getUsersList } from "../redux/actions";
+import { addUser,getUsersList,deleteUser } from "../redux/actions";
 import SignUp from "./signUp";
 import axios from "axios";
 //import * as React from 'react';
@@ -51,7 +51,29 @@ export default connect(mapStateToProps)(function Login(props) {
 
     }
   }
-  
+  const delUser=async()=>{
+    try{
+      //const newUser={ idNumber: IDNumberRef.current.value }
+
+      console.log(IDNumberRef.current.value,"IDNumberRef");
+      const id=IDNumberRef.current.value
+      const response=await axios.delete(`http://localhost:5000/user/${id}`)
+      console.log(id,"IDNumberRef");
+      console.log(response.data);
+      if(response.status==200)
+      {
+        console.log("delUser");
+
+        dispatch(deleteUser(IDNumberRef.current.value))
+
+      }
+    }
+    catch(error){
+     
+      console.error(error);
+
+    }
+  }
   
   const navigate = useNavigate()
   const { usersList, dispatch } = props
@@ -86,6 +108,22 @@ export default connect(mapStateToProps)(function Login(props) {
     navigate('/signUp', { state: {} })
 
   }
+  const del = (() => {
+    delUser()
+    // console.log(`${IDNumberRef.current.value}= IDNumberRef`)
+    // const userId = IDNumberRef.current.value;
+    // console.log("userId11111", userId)
+    // const userFound = usersList.find(user => user.idNumber === IDNumberRef.current.value);
+    // console.log(`userFound`, userFound)
+    //if (userFound != undefined) {
+      //alert(`שלום ${userFound.firstName} ${userFound.lastName}`);
+      //dispatch(deleteUser(IDNumberRef.current.value))
+      navigate('/', { state: {} })
+    // } else {
+    //   alert("המשתמש לא נמצא");
+    // }
+
+  })
   // console.log(showLogin," showLogin")
   // if (showLogin) {
   //debugger
@@ -132,6 +170,16 @@ export default connect(mapStateToProps)(function Login(props) {
               onClick={login}
             >
               כניסה
+            </Button>
+            <Button
+              //type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2, backgroundColor: "gray" }}
+              // disabled={isDisable}
+              onClick={del}
+            >
+              מחיקה
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
